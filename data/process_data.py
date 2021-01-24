@@ -1,16 +1,50 @@
 import sys
+import pandas as pd
+from sqlalchemy import create_engine
 
 
 def load_data(messages_filepath, categories_filepath):
-    pass
+    # load messages dataset
+    messages = pd.read_csv(messages_filepath)
 
+    # load categories dataset
+    categories = pd.read_csv(categories_filepath)
+
+    # merge datasets
+    df = messages.merge(categories, on='id')
+
+    return df
 
 def clean_data(df):
-    pass
+    # create a dataframe of the 36 individual category columns
+    categories = df['categories'].str.split(';', expand=True)
 
+    # list category's names from the first row
+    row = categories.iloc[[0]]
+    category_colnames = list(row.apply(lambda x: x.str.split('-').str.get(0)[0]))
+
+    # rename the columns of `categories`
+    categories.columns = category_colnames
+
+    # convert category values to 0 or 1
+    for column in categories:
+        categories[column] = pd.to_numeric(categories[column].str.split('-').str.get(1))
+
+    # replace categories column in df with new category columns
+    df.drop(columns=['categories'], inplace=True)
+    df = pd.concat([df, categories], axis=1)
+
+    # remove duplicates
+    df = df.drop_duplicates()
+
+    return df
 
 def save_data(df, database_filename):
-    pass  
+    # save the clean dataset to an sqlite database
+    engine = create_engine('sqlite:///{}'.format(database_filename))
+    table_name = '{}'.format(database_filename.split('.')[0])
+    engine.execute("DROP TABLE IF EXISTS {}".format(table_name))
+    df.to_sql(table_name, engine, index=False)
 
 
 def main():
