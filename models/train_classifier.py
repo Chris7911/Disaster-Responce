@@ -22,8 +22,7 @@ import pickle
 def load_data(database_filepath):
     # load data from database
     engine = create_engine('sqlite:///{}'.format(database_filepath))
-    table_name = database_filepath.split('.')[0]
-    df = pd.read_sql_table(table_name, engine)
+    df = pd.read_sql_table('DisasterResponse', engine)
     X = df.message.values
     Y = df.iloc[:, 4:].to_numpy()
     category_names = list(df.columns[4:])
