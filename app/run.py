@@ -43,6 +43,11 @@ def index():
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
     
+    # sort categories to see if we have imbalanced dataset
+    sort_categories = df[df.columns[4:]].sum().sort_values(ascending=False).reset_index()
+    category_names = sort_categories.iloc[:, 0]
+    category_counts = sort_categories.iloc[:, 1]
+    
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
@@ -50,7 +55,8 @@ def index():
             'data': [
                 Bar(
                     x=genre_names,
-                    y=genre_counts
+                    y=genre_counts,
+                    marker_color='lightseagreen'
                 )
             ],
 
@@ -61,6 +67,27 @@ def index():
                 },
                 'xaxis': {
                     'title': "Genre"
+                }
+            }
+        },
+
+        {
+            'data': [
+                Bar(
+                    x=category_names,
+                    y=category_counts,
+                    marker_color='lightsalmon'
+                )
+            ],
+
+            'layout': {
+                'title': 'Imbalanced Categories',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Category",
+                    'tickangle': -35,
                 }
             }
         }
